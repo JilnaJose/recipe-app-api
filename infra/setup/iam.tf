@@ -165,7 +165,10 @@ data "aws_iam_policy_document" "rds" {
       "rds:CreateDBInstance",
       "rds:DeleteDBInstance",
       "rds:ListTagsForResource",
-      "rds:ModifyDBInstance"
+      "rds:ModifyDBInstance",
+      "rds:AddTagsToResource",      # ✅ ADD THIS - Required for tagging resources
+      "rds:RemoveTagsFromResource", # ✅ ADD THIS - Good practice for tag management
+      "rds:ModifyDBSubnetGroup"     # ✅ ADD THIS - Useful for subnet group updates
     ]
     resources = ["*"]
   }
