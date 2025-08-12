@@ -1,21 +1,26 @@
 #######################################################################
 # Create IAM user and policies for Continuous Deployment (CD) account #
 #######################################################################
+
 resource "aws_iam_user" "cd" {
   name = "recipe-app-api-cd"
 }
+
 resource "aws_iam_access_key" "cd" {
   user = aws_iam_user.cd.name
 }
+
 #########################################################
 # Policy for Teraform backend to S3 and DynamoDB access #
 #########################################################
+
 data "aws_iam_policy_document" "tf_backend" {
   statement {
     effect    = "Allow"
     actions   = ["s3:ListBucket"]
     resources = ["arn:aws:s3:::${var.tf_state_bucket}"]
   }
+
   statement {
     effect  = "Allow"
     actions = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"]
@@ -35,24 +40,29 @@ data "aws_iam_policy_document" "tf_backend" {
     resources = ["arn:aws:dynamodb:*:*:table/${var.tf_state_lock_table}"]
   }
 }
+
 resource "aws_iam_policy" "tf_backend" {
   name        = "${aws_iam_user.cd.name}-tf-s3-dynamodb"
   description = "Allow user to use S3 and DynamoDB for TF backend resources"
   policy      = data.aws_iam_policy_document.tf_backend.json
 }
+
 resource "aws_iam_user_policy_attachment" "tf_backend" {
   user       = aws_iam_user.cd.name
   policy_arn = aws_iam_policy.tf_backend.arn
 }
+
 #########################
 # Policy for ECR access #
 #########################
+
 data "aws_iam_policy_document" "ecr" {
   statement {
     effect    = "Allow"
     actions   = ["ecr:GetAuthorizationToken"]
     resources = ["*"]
   }
+
   statement {
     effect = "Allow"
     actions = [
@@ -68,18 +78,22 @@ data "aws_iam_policy_document" "ecr" {
     ]
   }
 }
+
 resource "aws_iam_policy" "ecr" {
   name        = "${aws_iam_user.cd.name}-ecr"
   description = "Allow user to manage ECR resources"
   policy      = data.aws_iam_policy_document.ecr.json
 }
+
 resource "aws_iam_user_policy_attachment" "ecr" {
   user       = aws_iam_user.cd.name
   policy_arn = aws_iam_policy.ecr.arn
 }
+
 #########################
 # Policy for EC2 access #
 #########################
+
 data "aws_iam_policy_document" "ec2" {
   statement {
     effect = "Allow"
@@ -124,18 +138,22 @@ data "aws_iam_policy_document" "ec2" {
     resources = ["*"]
   }
 }
+
 resource "aws_iam_policy" "ec2" {
   name        = "${aws_iam_user.cd.name}-ec2"
   description = "Allow user to manage EC2 resources."
   policy      = data.aws_iam_policy_document.ec2.json
 }
+
 resource "aws_iam_user_policy_attachment" "ec2" {
   user       = aws_iam_user.cd.name
   policy_arn = aws_iam_policy.ec2.arn
 }
+
 #########################
 # Policy for RDS access #
 #########################
+
 data "aws_iam_policy_document" "rds" {
   statement {
     effect = "Allow"
@@ -147,23 +165,30 @@ data "aws_iam_policy_document" "rds" {
       "rds:CreateDBInstance",
       "rds:DeleteDBInstance",
       "rds:ListTagsForResource",
-      "rds:ModifyDBInstance"
+      "rds:ModifyDBInstance",
+      "rds:AddTagsToResource",      # ✅ ADD THIS - Required for tagging resources
+      "rds:RemoveTagsFromResource", # ✅ ADD THIS - Good practice for tag management
+      "rds:ModifyDBSubnetGroup"     # ✅ ADD THIS - Useful for subnet group updates
     ]
     resources = ["*"]
   }
 }
+
 resource "aws_iam_policy" "rds" {
   name        = "${aws_iam_user.cd.name}-rds"
   description = "Allow user to manage RDS resources."
   policy      = data.aws_iam_policy_document.rds.json
 }
+
 resource "aws_iam_user_policy_attachment" "rds" {
   user       = aws_iam_user.cd.name
   policy_arn = aws_iam_policy.rds.arn
 }
+
 #########################
 # Policy for ECS access #
 #########################
+
 data "aws_iam_policy_document" "ecs" {
   statement {
     effect = "Allow"
@@ -184,18 +209,22 @@ data "aws_iam_policy_document" "ecs" {
     resources = ["*"]
   }
 }
+
 resource "aws_iam_policy" "ecs" {
   name        = "${aws_iam_user.cd.name}-ecs"
   description = "Allow user to manage ECS resources."
   policy      = data.aws_iam_policy_document.ecs.json
 }
+
 resource "aws_iam_user_policy_attachment" "ecs" {
   user       = aws_iam_user.cd.name
   policy_arn = aws_iam_policy.ecs.arn
 }
+
 #########################
 # Policy for IAM access #
 #########################
+
 data "aws_iam_policy_document" "iam" {
   statement {
     effect = "Allow"
@@ -220,18 +249,22 @@ data "aws_iam_policy_document" "iam" {
     resources = ["*"]
   }
 }
+
 resource "aws_iam_policy" "iam" {
   name        = "${aws_iam_user.cd.name}-iam"
   description = "Allow user to manage IAM resources."
   policy      = data.aws_iam_policy_document.iam.json
 }
+
 resource "aws_iam_user_policy_attachment" "iam" {
   user       = aws_iam_user.cd.name
   policy_arn = aws_iam_policy.iam.arn
 }
+
 ################################
 # Policy for CloudWatch access #
 ################################
+
 data "aws_iam_policy_document" "logs" {
   statement {
     effect = "Allow"
@@ -245,18 +278,22 @@ data "aws_iam_policy_document" "logs" {
     resources = ["*"]
   }
 }
+
 resource "aws_iam_policy" "logs" {
   name        = "${aws_iam_user.cd.name}-logs"
   description = "Allow user to manage CloudWatch resources."
   policy      = data.aws_iam_policy_document.logs.json
 }
+
 resource "aws_iam_user_policy_attachment" "logs" {
   user       = aws_iam_user.cd.name
   policy_arn = aws_iam_policy.logs.arn
 }
+
 #########################
 # Policy for ELB access #
 #########################
+
 data "aws_iam_policy_document" "elb" {
   statement {
     effect = "Allow"
@@ -282,11 +319,13 @@ data "aws_iam_policy_document" "elb" {
     resources = ["*"]
   }
 }
+
 resource "aws_iam_policy" "elb" {
   name        = "${aws_iam_user.cd.name}-elb"
   description = "Allow user to manage ELB resources."
   policy      = data.aws_iam_policy_document.elb.json
 }
+
 resource "aws_iam_user_policy_attachment" "elb" {
   user       = aws_iam_user.cd.name
   policy_arn = aws_iam_policy.elb.arn
@@ -312,6 +351,8 @@ data "aws_iam_policy_document" "efs" {
       "elasticfilesystem:CreateAccessPoint",
       "elasticfilesystem:CreateFileSystem",
       "elasticfilesystem:TagResource",
+      "elasticfilesystem:UntagResource",
+      "elasticfilesystem:DescribeTags",
     ]
     resources = ["*"]
   }
