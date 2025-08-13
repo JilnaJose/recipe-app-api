@@ -369,6 +369,7 @@ data "aws_iam_policy_document" "efs" {
       "ec2:AttachNetworkInterface",
       "ec2:DetachNetworkInterface",
       "ec2:DescribeSecurityGroups",
+      "ec2:DescribeNetworkInterfaceAttribute", #
     ]
     resources = ["*"]
   }
