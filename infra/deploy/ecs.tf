@@ -198,6 +198,16 @@ resource "aws_security_group" "ecs_service" {
     ]
   }
 
+  # NFS Port for EFS volumes
+  egress {
+    from_port = 2049
+    to_port   = 2049
+    protocol  = "tcp"
+    cidr_blocks = [
+      aws_subnet.private_a.cidr_block,
+      aws_subnet.private_b.cidr_block,
+    ]
+  }
 
   # HTTP inbound access
 
@@ -221,7 +231,6 @@ resource "aws_ecs_service" "api" {
   enable_execute_command = true
 
   network_configuration {
-    assign_public_ip = true
 
     subnets = [
       aws_subnet.private_a.id,
