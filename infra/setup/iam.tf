@@ -357,7 +357,23 @@ data "aws_iam_policy_document" "efs" {
     ]
     resources = ["*"]
   }
+  # ← ADD THIS ENTIRE STATEMENT BLOCK
+  statement {
+    effect = "Allow"
+    actions = [
+      "ec2:DescribeSubnets",
+      "ec2:DescribeVpcs",
+      "ec2:DescribeNetworkInterfaces",
+      "ec2:CreateNetworkInterface",
+      "ec2:DeleteNetworkInterface",
+      "ec2:AttachNetworkInterface",
+      "ec2:DetachNetworkInterface",
+      "ec2:DescribeSecurityGroups",
+    ]
+    resources = ["*"]
+  }
 }
+
 
 resource "aws_iam_policy" "efs" {
   name        = "${aws_iam_user.cd.name}-efs"
